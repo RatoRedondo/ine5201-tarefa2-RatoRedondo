@@ -15,6 +15,7 @@ from tkinter import ttk
 _root = None
 _display = None
 _historico = None
+_novo_numero = False
 _LIMITE_DISPLAY = 18
 
 
@@ -33,6 +34,7 @@ def criar_layout():
     ).grid(row=0, column=0, columnspan=4, sticky="ew", pady=(0, 8))
 
     def clicar_botao(event):
+        global _novo_numero
         valor = event.widget["text"]
         atual = _display.get()
 
@@ -41,14 +43,19 @@ def criar_layout():
         elif valor == "C":
             atualizar_display("0")
             _historico.delete(0, tk.END)
+            _novo_numero = False
         elif valor == "←":
             atualizar_display(atual[:-1] or "0")
+            _novo_numero = False
         else:
             if atual.startswith("Erro:"):
+                atual = "0"
+            if _novo_numero and (valor.isdigit() or valor == "."):
                 atual = "0"
             if atual == "0" and valor.isdigit():
                 atual = ""
             atualizar_display(atual + valor)
+            _novo_numero = False
 
     botoes = (
         ("7", "8", "9", "/"),
@@ -79,6 +86,8 @@ def atualizar_display(valor):
 
 
 def calcular(expressao):
+    global _novo_numero
+
     numeros = []
     operadores = []
     numero = ""
@@ -112,6 +121,31 @@ def calcular(expressao):
         if operador == "/" and numeros[indice + 1] == 0:
             tratar_erro("Divisão por zero")
             return
+
+    indice = 0
+    while indice < len(operadores):
+        if operadores[indice] in "*/":
+            esquerda = numeros[indice]
+            direita = numeros[indice + 1]
+            if operadores[indice] == "*":
+                numeros[indice] = esquerda * direita
+            else:
+                numeros[indice] = esquerda / direita
+            del numeros[indice + 1]
+            del operadores[indice]
+        else:
+            indice += 1
+
+    resultado = numeros[0]
+    for indice, operador in enumerate(operadores):
+        if operador == "+":
+            resultado += numeros[indice + 1]
+        else:
+            resultado -= numeros[indice + 1]
+
+    adicionar_ao_historico(expressao, resultado)
+    atualizar_display(resultado)
+    _novo_numero = True
 
 
 def tratar_erro(mensagem):
