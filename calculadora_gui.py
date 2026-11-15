@@ -15,6 +15,7 @@ from tkinter import ttk
 _root = None
 _display = None
 _historico = None
+_LIMITE_DISPLAY = 18
 
 
 def criar_layout():
@@ -71,7 +72,10 @@ def criar_layout():
 
 
 def atualizar_display(valor):
-    _display.set(str(valor))
+    texto = str(valor)
+    if not texto.startswith("Erro:"):
+        texto = texto[:_LIMITE_DISPLAY]
+    _display.set(texto)
 
 
 def calcular(expressao):
@@ -83,7 +87,9 @@ def tratar_erro(mensagem):
 
 
 def adicionar_ao_historico(expressao, resultado):
-    pass
+    _historico.insert(0, f"{expressao} = {resultado}")
+    if _historico.size() > 5:
+        _historico.delete(5, tk.END)
 
 
 def main():
