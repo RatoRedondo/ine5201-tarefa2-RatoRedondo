@@ -79,11 +79,43 @@ def atualizar_display(valor):
 
 
 def calcular(expressao):
-    pass
+    numeros = []
+    operadores = []
+    numero = ""
+
+    for caractere in expressao:
+        if caractere in "+-*/":
+            if not numero:
+                tratar_erro("Expressão inválida")
+                return
+            numeros.append(numero)
+            operadores.append(caractere)
+            numero = ""
+        elif caractere.isdigit() or caractere == ".":
+            numero += caractere
+        else:
+            tratar_erro("Expressão inválida")
+            return
+
+    if not numero:
+        tratar_erro("Expressão inválida")
+        return
+    numeros.append(numero)
+
+    try:
+        numeros = [float(valor) for valor in numeros]
+    except ValueError:
+        tratar_erro("Expressão inválida")
+        return
+
+    for indice, operador in enumerate(operadores):
+        if operador == "/" and numeros[indice + 1] == 0:
+            tratar_erro("Divisão por zero")
+            return
 
 
 def tratar_erro(mensagem):
-    pass
+    atualizar_display(f"Erro: {mensagem}")
 
 
 def adicionar_ao_historico(expressao, resultado):
